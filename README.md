@@ -4,4 +4,4 @@ Le lezioni partono dalle basi di python e speriamo che siano chiare e semplici, 
 
 Solarized dark             |  Solarized Ocean
 :-------------------------:|:-------------------------:
-![](img\starting_finance_club_torino_logo.jpg)  |  ![](img\Python_logo_large.png)
+![](img/starting_finance_club_torino_logo.jpg)  |  ![](img/Python_logo_large.png)
