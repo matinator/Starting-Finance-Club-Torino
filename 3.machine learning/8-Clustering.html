@@ -3,7 +3,7 @@
 <head><meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>7-PCA_LDA_NMF</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>8-Clustering</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 
 
 
@@ -14259,12 +14259,18 @@ a.anchor-link {
 
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Riduzione-della-dimensionalit&#224;">Riduzione della dimensionalit&#224;<a class="anchor-link" href="#Riduzione-della-dimensionalit&#224;">&#182;</a></h1><p>Fino ad ora abbiamo visto come le feature siano importanti per poter definire un algoritmo in grado di eseguire il proprio compito imparando dai dati, ora il problema è che ci potremmo trovare in condizioni in cui sfortunatamente abbiamo troppe feature e troppi pochi dati(troppe colonne e troppe poche righe) o che ci dicano che vogliono un njumero massimo di feature da usare per predire il nostro algoritmo in tal caso possiamo utilizzare <strong>algoritmi che ci aiutino a ridurre le dimensioni del nostro dataset considerando solo quelle rilevanti anche senza sapere il modello che useremo, inoltre i dataset possono essere utilizzati in diversi contesti come tesi, immagini e molto altro</strong>.</p>
-<h2 id="decomposizione-ai-valori-singolari-(SVD)">decomposizione ai valori singolari (SVD)<a class="anchor-link" href="#decomposizione-ai-valori-singolari-(SVD)">&#182;</a></h2><p>La <strong><a href="https://it.wikipedia.org/wiki/Decomposizione_ai_valori_singolari">decomposizione ai valori singolari</a></strong> si basa su nozioni geometriche al fine di fattorizzare la matrice di partenza in matrici più semplici e che mi fornisca informazioni sulle proprietà di ogni componente che stiamo considerando.Dal punto di vista matematico si ha:</p>
-\begin{equation}
-    \Large M_{n \times m} = U_{n \times n} D_{n \times m} V^{\dagger}_{m \times m}
-\end{equation}<p>dove $ M_{n \times m}$ è la nostra matrice di partenza con n righe e m colonne, $U_{n \times n}$ è una matrice unitaria ortogonale, $D_{n \times m}$ è una matrice singolare diagonale $n\times m$, e $V^{\dagger}_{m \times m}$ è la trasposta coniugata di una matrice unitaria ortogonale.<br>
-Dal punto di vista pratico quello che ci interessa è la matrice $D$ poiché i suoi valori sulla diagonali rappresentano la varianza di ogni singola componente, a cosa ci serve questo? Per capirlo facciamo un esempio</p>
+<h1 id="Clustering">Clustering<a class="anchor-link" href="#Clustering">&#182;</a></h1><p>La tecnica di <strong><a href="https://it.wikipedia.org/wiki/Clustering">clustering</a></strong> consiste in un analisi multivariata dei dati al fine di stabilire dei gruppi contenenti dati simili al loro interno e dati diversi al loro esterno, in genere per effettuare questa misura della somiglianza tra i dati si ricorre a misura di metrica come distanza geometrica, in base ad essa i risultati potrebbero essere diversi.<br>
+Il clustering presenta due approcci al problema:</p>
+<ul>
+<li>approccio aggregativo : ogni punto è un cluster a se e l'algoritmo secondo certe specifiche unisce i cluster più vicini</li>
+<li>approccio divisivo: il dataset è un unico cluster e vengono poi definito in seguito più cluster basandoci sulla similarità dei dati
+<strong>Potete notare che non sono state fatte assunzioni su come quantificare l'errore di mislassificazione ma solo sulle proprietà dei dati, questo ci dice che questi metodi sono unsupervised, ovvero l'agoritmo non richiede di sapere la soluzione corretta</strong>.
+<strong><em>Questo è un allo stesso tempo un vantaggio e uno svataggio, lo svantaggio è che l'algoritmo impara autonomamente le proprietà dei dati, lo svantaggio è che è estrememamente difficile valutare e interpretare i risultati ottenuti.</em></strong>
+Per ovviare a questi problemi in molti casi si usa un <strong><a href="https://scikit-learn.org/stable/modules/clustering.html#hierarchical-clustering">clustering gerarchico</a></strong>, questo permette di definire una struttura ad albero attraverso cui poter interpretare successivamente i dati.</li>
+</ul>
+<h2 id="K-Means">K-Means<a class="anchor-link" href="#K-Means">&#182;</a></h2><p>Partiamo dall'algoritmo forse più conosciuto e citato per il clustering il <strong><a href="https://scikit-learn.org/stable/modules/clustering.html#k-means">K-means</a></strong>, la caratteristica di questo algoritmo è <strong>la necessità di sapere il numero di cluster e il fatto che essi siano isotropi e convessi, cosa che non permette sempre di essere in grado di rivelarsi vera</strong>.<br>
+L'algoritmo si basa sulla <strong>minimizzazione della somma dei quadrati dei criterio(metrica eucliediana, di manhattan, ecc...) attraverso la scelta di centroidi, ovvero icentri del cluster</strong>, per questi motivi dobbiamo stare a non passare dataset ad alta dimensionalità poichè in tal caso queste somma diventano enormi, per questo in molti casi questo effetto si chiama <strong><em>curse of dimensionality</em></strong>.
+La velocità con cui l'algoritmo converge e la possibilità di trovare un minimo locale è influita fortemente dalla scelta delle posizioni iniziali dei centroidi, un modo per risolvere il problema è usare l'algoritmo <strong><a href="https://en.wikipedia.org/wiki/K-means%2B%2B">k-means++</a></strong>.<br>I cluster ottenuti alla fine avranno una varianza quanto più uguale possibile tra di loro, vediamo di capire cosa succede se però diamo un numero cluster sbagliato attraverso del codice python.</p>
 
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -14273,16 +14279,64 @@ Dal punto di vista pratico quello che ci interessa è la matrice $D$ poiché i s
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> widget
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_iris</span> <span class="c1"># dataset of plants</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">plot_confusion_matrix</span><span class="p">,</span> <span class="n">classification_report</span>
 
-<span class="c1">#la nostra matrice di partenza</span>
-<span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span> <span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">19</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">24</span><span class="p">]])</span>
+<span class="c1">#get the data</span>
+<span class="n">iris</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">()</span>
+<span class="n">iris_data</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">(</span><span class="n">as_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1">#get the pandas dataframe</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">iris_data</span><span class="p">[</span><span class="s1">&#39;frame&#39;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The dataset we have is made of: &#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 
-<span class="n">U</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
 
-<span class="c1">#Trasformo solo D poiché essendo diagonale numpy per risparmiare memoria</span>
-<span class="c1">#vi ritorna un array 1D poiché per le operazioni hanno lo stesso comportamento</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Matrix U:</span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">U</span><span class="si">}</span><span class="se">\n</span><span class="s1"> Matrix D :</span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">D</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1"> Matrix V :</span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">V</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">iris_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+                                                    <span class="n">iris_data</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                                                    <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+
+<span class="c1">#let&#39;s train the model</span>
+<span class="n">iris_kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span> <span class="c1">#correct number of cluster</span>
+<span class="n">iris_kmeans</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+
+<span class="c1">#classification training report</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training report classification of Kmeans on iris&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classification_report</span><span class="p">(</span><span class="n">y_train</span><span class="p">,</span> <span class="n">iris_kmeans</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_train</span><span class="p">)))</span>
+
+<span class="c1">#classification teaining report</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Testing report classification of Kmean on iris&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classification_report</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">iris_kmeans</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)))</span>
+
+<span class="c1">#unite predictions</span>
+<span class="n">kmeans_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">iris_kmeans</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_train</span><span class="p">),</span> <span class="n">iris_kmeans</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">,</span> <span class="n">elev</span><span class="o">=-</span><span class="mi">150</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="mi">110</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xs</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sepal length (cm)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sepal width (cm)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+           <span class="n">zs</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;petal length (cm)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Iris dataset&quot;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;sepal length&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;sepal width&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;petal length&#39;</span><span class="p">)</span>
+
+<span class="n">ax2</span><span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">,</span> <span class="n">elev</span><span class="o">=-</span><span class="mi">150</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="mi">110</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xs</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sepal length (cm)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sepal width (cm)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+           <span class="n">zs</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;petal length (cm)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">kmeans_pred</span> <span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Predicted dataset KMEANS&quot;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;sepal length&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;sepal width&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;petal length&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cluster centers are:</span><span class="se">\n</span><span class="si">{</span><span class="n">iris_kmeans</span><span class="o">.</span><span class="n">cluster_centers_</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14302,18 +14356,207 @@ Dal punto di vista pratico quello che ci interessa è la matrice $D$ poiché i s
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Matrix U:
- [[-0.22097491 -0.91114121  0.34783874]
- [-0.60034273  0.4081545   0.68774887]
- [-0.76860828 -0.05684721 -0.63718891]]
- Matrix D :
- [[32.61541883  0.          0.        ]
- [ 0.          3.45287401  0.        ]
- [ 0.          0.          1.14547607]]
- Matrix V :
- [[-0.1091269  -0.27246326 -0.95595768]
- [ 0.05781499 -0.96181284  0.26753223]
- [ 0.99234507  0.02607372 -0.12071212]]
+<pre>The dataset we have is made of: 
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output " data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>sepal length (cm)</th>
+      <th>sepal width (cm)</th>
+      <th>petal length (cm)</th>
+      <th>petal width (cm)</th>
+      <th>target</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5.1</td>
+      <td>3.5</td>
+      <td>1.4</td>
+      <td>0.2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>4.9</td>
+      <td>3.0</td>
+      <td>1.4</td>
+      <td>0.2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>4.7</td>
+      <td>3.2</td>
+      <td>1.3</td>
+      <td>0.2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4.6</td>
+      <td>3.1</td>
+      <td>1.5</td>
+      <td>0.2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5.0</td>
+      <td>3.6</td>
+      <td>1.4</td>
+      <td>0.2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>145</th>
+      <td>6.7</td>
+      <td>3.0</td>
+      <td>5.2</td>
+      <td>2.3</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>146</th>
+      <td>6.3</td>
+      <td>2.5</td>
+      <td>5.0</td>
+      <td>1.9</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>147</th>
+      <td>6.5</td>
+      <td>3.0</td>
+      <td>5.2</td>
+      <td>2.0</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>148</th>
+      <td>6.2</td>
+      <td>3.4</td>
+      <td>5.4</td>
+      <td>2.3</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>149</th>
+      <td>5.9</td>
+      <td>3.0</td>
+      <td>5.1</td>
+      <td>1.8</td>
+      <td>2</td>
+    </tr>
+  </tbody>
+</table>
+<p>150 rows × 5 columns</p>
+</div>
+</div>
+
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Training report classification of Kmeans on iris
+              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00        34
+           1       0.00      0.00      0.00        27
+           2       0.17      0.17      0.17        29
+
+    accuracy                           0.06        90
+   macro avg       0.06      0.06      0.06        90
+weighted avg       0.05      0.06      0.05        90
+
+Testing report classification of Kmean on iris
+              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00        16
+           1       0.00      0.00      0.00        23
+           2       0.29      0.43      0.35        21
+
+    accuracy                           0.15        60
+   macro avg       0.10      0.14      0.12        60
+weighted avg       0.10      0.15      0.12        60
+
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+
+
+
+
+<div id="e952bab0-daef-4a6d-8d5f-9e76f6870494" class="jupyter-widgets jp-OutputArea-output ">
+<script type="text/javascript">
+var element = document.getElementById('e952bab0-daef-4a6d-8d5f-9e76f6870494');
+</script>
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id": "157d302587d14007997cd2a2075ba9f5", "version_major": 2, "version_minor": 0}
+</script>
+</div>
+
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Cluster centers are:
+[[6.92307692 3.12307692 5.78076923 2.08461538]
+ [4.99411765 3.38235294 1.45294118 0.23235294]
+ [5.85666667 2.75333333 4.29666667 1.39333333]]
 </pre>
 </div>
 </div>
@@ -14322,35 +14565,57 @@ Dal punto di vista pratico quello che ci interessa è la matrice $D$ poiché i s
 
 </div>
 
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>Ora mettiamo ipotesi che i voglia considerare solo le due componenti più importanti per ricostruire il dataset, per farlo vediamo se togliendo un valore alla diagonale che succede, ricordate noi vogliamo che $M \approx UDV^{\dagger}$, per fare in modo che non ci siano problemi di dimensionalità nel prodotto scalare successivo alla matrice $U$ si toglie la relativa colonna, mentre alla matrice $V^{\dagger}$ si toglie la riga relativa ad essa.</p>
-
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#eliminate the first value of D, U and V lose the column</span>
-<span class="c1">#@ means dot product in numpy</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> widget
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Now we try to use the diabetes dataset&quot;</span><span class="p">)</span>
+<span class="c1">#get diabetes data</span>
+<span class="n">diabetes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../data/diabetes2.csv&#39;</span><span class="p">)</span>
+<span class="n">X_diabetes</span><span class="p">,</span> <span class="n">y_diabetes</span> <span class="o">=</span> <span class="n">diabetes</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;Outcome&#39;</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">diabetes</span><span class="o">.</span><span class="n">Outcome</span><span class="o">.</span><span class="n">values</span>
 
-<span class="c1">#original calculus gives me the original M</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;original matrix obtained with all features:</span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">U</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">D</span><span class="p">)</span> <span class="o">@</span> <span class="n">V</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">X_diab_train</span><span class="p">,</span> <span class="n">X_diab_test</span><span class="p">,</span> <span class="n">y_diab_train</span><span class="p">,</span> <span class="n">y_diab_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X_diabetes</span><span class="p">,</span> 
+                                                    <span class="n">y_diabetes</span><span class="p">,</span>
+                                                    <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
 
-<span class="c1">#i remove the first colmn of U and last row of V</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;matrix obtained eliminating the first element in diagonal </span><span class="si">{</span><span class="n">D</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span>
-      <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">U</span><span class="p">[:</span> <span class="p">,</span><span class="mi">1</span><span class="p">:]</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">D</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">@</span> <span class="n">V</span><span class="p">[:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="c1">#ler&#39;s train the model</span>
+<span class="n">diab_kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="c1">#correct number of cluster</span>
+<span class="n">diab_kmeans</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_diab_train</span><span class="p">)</span>
 
-<span class="c1">#i remove the middle column of U and middle row of V</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;matrix obtained eliminating the second element in diagonal </span><span class="si">{</span><span class="n">D</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span>
-      <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">U</span><span class="p">[:</span> <span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">D</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]])</span> <span class="o">@</span> <span class="n">V</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">:]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="c1">#classification training report</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training report classification of Kmeans on diabetes&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classification_report</span><span class="p">(</span><span class="n">y_diab_train</span><span class="p">,</span> <span class="n">diab_kmeans</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_diab_train</span><span class="p">)))</span>
 
-<span class="c1">##i remove the last column of U and first row of V</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;matrix obtained eliminating the second element in diagonal </span><span class="si">{</span><span class="n">D</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span>
-      <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">U</span><span class="p">[:</span> <span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]]</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">D</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span> <span class="o">@</span> <span class="n">V</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">:]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="c1">#classification teaining report</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Testing report classification of Kmeans on diabetes&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classification_report</span><span class="p">(</span><span class="n">y_diab_test</span><span class="p">,</span> <span class="n">diab_kmeans</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_diab_test</span><span class="p">)))</span>
+
+<span class="c1">#unite predictions</span>
+<span class="n">kmeans_pred_diab</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">diab_kmeans</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_diab_train</span><span class="p">),</span> <span class="n">diab_kmeans</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_diab_test</span><span class="p">)))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">,</span> <span class="n">elev</span><span class="o">=-</span><span class="mi">150</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="mi">110</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xs</span> <span class="o">=</span> <span class="n">diabetes</span><span class="p">[</span><span class="s1">&#39;BMI&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="n">diabetes</span><span class="p">[</span><span class="s1">&#39;Glucose&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+           <span class="n">zs</span> <span class="o">=</span> <span class="n">diabetes</span><span class="p">[</span><span class="s1">&#39;Age&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">y_diabetes</span> <span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Diabetes dataset&quot;</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;BMI&#39;</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Glucose&#39;</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;Age&#39;</span><span class="p">)</span>
+
+<span class="n">ax4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">,</span> <span class="n">elev</span><span class="o">=-</span><span class="mi">150</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="mi">110</span><span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xs</span> <span class="o">=</span> <span class="n">diabetes</span><span class="p">[</span><span class="s1">&#39;BMI&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="n">diabetes</span><span class="p">[</span><span class="s1">&#39;Glucose&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+           <span class="n">zs</span> <span class="o">=</span> <span class="n">diabetes</span><span class="p">[</span><span class="s1">&#39;Age&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">kmeans_pred_diab</span> <span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Predicted dataset KMEANS&quot;</span><span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;BMI&#39;</span><span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Glucose&#39;</span><span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;Age&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cluster centers are:</span><span class="se">\n</span><span class="si">{</span><span class="n">diab_kmeans</span><span class="o">.</span><span class="n">cluster_centers_</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14370,22 +14635,65 @@ Dal punto di vista pratico quello che ci interessa è la matrice $D$ poiché i s
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>original matrix obtained with all features:
- [[ 1.  5.  6.]
- [ 3.  4. 19.]
- [ 2.  7. 24.]]
-matrix obtained eliminating the first element in diagonal 32.6154188335189:
-[[ 0.36635519  0.47395901  3.114092  ]
- [-0.10824657 -1.14170015 -1.13647509]
- [-0.02077816  0.75549322 -0.00762631]]
-matrix obtained eliminating the second element in diagonal 3.4528740055280096:
-[[ 1.18188917  1.97408316  6.84167133]
- [ 2.91852099  5.35548866 18.6229652 ]
- [ 2.01134829  6.81120935 24.0525129 ]]
-matrix obtained eliminating the second element in diagonal 1.1454760652624991:
-[[ 0.60460909  4.98961116  6.04809665]
- [ 2.21823068  3.97945913 19.09509699]
- [ 2.72429743  7.0190308  23.91189408]]
+<pre>Now we try to use the diabetes dataset
+Training report classification of Kmeans on diabetes
+              precision    recall  f1-score   support
+
+           0       0.69      0.83      0.75       393
+           1       0.52      0.32      0.40       221
+
+    accuracy                           0.65       614
+   macro avg       0.60      0.58      0.57       614
+weighted avg       0.63      0.65      0.62       614
+
+Testing report classification of Kmeans on diabetes
+              precision    recall  f1-score   support
+
+           0       0.75      0.88      0.81       107
+           1       0.54      0.32      0.40        47
+
+    accuracy                           0.71       154
+   macro avg       0.64      0.60      0.60       154
+weighted avg       0.68      0.71      0.68       154
+
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+
+
+
+
+<div id="5b17eac5-23b8-4d80-8590-aae0daae2c0e" class="jupyter-widgets jp-OutputArea-output ">
+<script type="text/javascript">
+var element = document.getElementById('5b17eac5-23b8-4d80-8590-aae0daae2c0e');
+</script>
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id": "00e104522add40afaaee0293ca516394", "version_major": 2, "version_minor": 0}
+</script>
+</div>
+
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Cluster centers are:
+[[  3.96855346 115.18658281  68.34591195  17.68972746  32.63102725
+   31.44046122   0.43319078  33.71069182]
+ [  3.54744526 140.77372263  72.2919708   30.83941606 254.50364964
+   34.87445255   0.58234307  33.18978102]]
 </pre>
 </div>
 </div>
@@ -14397,10 +14705,10 @@ matrix obtained eliminating the second element in diagonal 1.1454760652624991:
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>Da come possiamo vedere che se noi togliamo il valore  più piccolo dalla matrice diagonale, la nuova matrice ricostruita sarà molto vicina alla matrice ottenuta, in tal caso la decomposizione viene chiamata <strong><a href="https://langvillea.people.cofc.edu/DISSECTION-LAB/Emmie%27sLSI-SVDModule/p5module.html">TruncatedSVD</a></strong>.<br>
-Da qui possiamo capire che qualora volessimo le componenti sono più rilevanti è sufficiente selezionare i valori delle diagonali più alti fino ad averne il numero desiderato.<br></p>
-<h2 id="PCA">PCA<a class="anchor-link" href="#PCA">&#182;</a></h2><p>La PCA (Principal Component Analysis) sfrutta prorio questo algoritmo di SVD permettendo di mappare il nostro problema proiettandolo su uno spazio più piccolo con la condizione di conserva quanto più possibile la norma dei nostri vettori sfruttando proprio la varianza di ogni singola feature associata ottenuta attraverso la matrice diagonale attenzione che ora le nostre nuove feature sono chiamate <strong>principal component</strong>, se avete dubbi consultate <strong><a href="https://medium.com/analytics-vidhya/what-is-principal-component-analysis-cf880cf95a0c">qui</a></strong>.<br>
-Poiché <strong><a href="https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html">scikit</a></strong> ha già implementato la sua funzione useremo quella.</p>
+<p>Come possiamo vedere in tal caso la situazione non è così buona, nè ottimale, questo è dovuto al fatto che noi non abbiamo dei cluster isotropi e non sono convessi, infatti si sovrappongono molto spesso uno con l'altro.<br>
+Ci possiamo mettere a usare altri algoritmi come <strong><a href="https://scikit-learn.org/stable/modules/clustering.html#spectral-clustering">Spectral clusteing</a></strong>, <strong><a href="https://scikit-learn.org/stable/modules/clustering.html#birch">BIRCH</a></strong> e altri oppure preprocessare il dataset, quello che però ci possiamo chiesere è <strong>qualora io però non sappia il numero di cluster posso usare algoritmo che non lo richiedano? La risposta è SI, esistono questi lgoritmi tra questi in scikit ci sono:</strong> <strong><a href="%matplotlib widget">Affinity propagation</a></strong>,  <strong><a href="https://scikit-learn.org/stable/modules/clustering.html#dbscan">DBSCAN</a></strong>, <strong><a href="https://scikit-learn.org/stable/modules/clustering.html#optics">OPTICS</a></strong> e altri, in questo notebook farò vedere solo il DBSCAN.</p>
+<h2 id="DBSCAN">DBSCAN<a class="anchor-link" href="#DBSCAN">&#182;</a></h2><p>Il <strong><a href="https://it.wikipedia.org/wiki/Dbscan">DBSCAN</a></strong> acronimo per "Density-Based Spatial Clustering of Applications with Noise" è un algoritmo di clustering il cui obiettivo e di dividere le regioni dello spazio in zone ad altà densità circondate da zone a bassa densità, per fare ciò il DBSCAN usa dei parametridi densità attraverso cui riesce a definire dei core samples che saranno il nostro cluster.<br>
+Controllando i valori dei parametri possiamo rendere l'algoritmo più robusto rispetto al Noise che ci permette di definire anche quando alcuni punti che non appartengono ai cluster siano effettivamente outliers, notate bene che a differenza dei kmeans questo algoritmo non richiede alcuna ipotesi sulla forma che abbiano questi cluster. L'implementazione scikit la trovate <strong><a href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html#sklearn.cluster.DBSCAN">qui</a></strong>, consultate anche la <strong><a href="https://scikit-learn.org/stable/modules/clustering.html#dbscan">user guide di scikit</a></strong>.</p>
 
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -14409,61 +14717,32 @@ Poiché <strong><a href="https://scikit-learn.org/stable/modules/generated/sklea
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">PCA</span>
-<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">GradientBoostingClassifier</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
-<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">plot_confusion_matrix</span><span class="p">,</span> <span class="n">classification_report</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">DBSCAN</span>
 
+<span class="n">dbscan</span> <span class="o">=</span> <span class="n">DBSCAN</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="c1">#all cores</span>
 
-<span class="c1">#classification data</span>
-<span class="n">diabetes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../data/diabetes2.csv&#39;</span><span class="p">)</span>
-<span class="n">X_diabetes</span><span class="p">,</span> <span class="n">y_diabetes</span> <span class="o">=</span> <span class="n">diabetes</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;Outcome&#39;</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">diabetes</span><span class="o">.</span><span class="n">Outcome</span><span class="o">.</span><span class="n">values</span>
-<span class="n">target_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Not Diabetes&quot;</span><span class="p">,</span> <span class="s2">&quot;Diabetes&quot;</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Original data: </span><span class="si">{</span><span class="n">X_diabetes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> dati, </span><span class="si">{</span><span class="n">X_diabetes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1"> feature&#39;</span><span class="p">)</span>
+<span class="c1">#classification training report</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Classification of DBSCAN on iris&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classification_report</span><span class="p">(</span><span class="n">iris_data</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dbscan</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">iris_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)))</span>
 
-<span class="c1">#let&#39;s find the 5 most valuable feature</span>
-<span class="n">diabetes_pca</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">,</span> <span class="n">elev</span><span class="o">=-</span><span class="mi">150</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="mi">110</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xs</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sepal length (cm)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sepal width (cm)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+           <span class="n">zs</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;petal length (cm)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Iris dataset&quot;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;sepal length&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;sepal width&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;petal length&#39;</span><span class="p">)</span>
 
-<span class="c1">#fit the data</span>
-<span class="n">diabetes_pca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_diabetes</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">,</span> <span class="n">elev</span><span class="o">=-</span><span class="mi">150</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="mi">110</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xs</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sepal length (cm)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sepal width (cm)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+           <span class="n">zs</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;petal length (cm)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">dbscan</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">iris_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Predicted dataset DBSCAN&quot;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;sepal length&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;sepal width&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;petal length&#39;</span><span class="p">)</span>
 
-<span class="c1">#trasform the data</span>
-<span class="n">X_pca</span> <span class="o">=</span> <span class="n">diabetes_pca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_diabetes</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Reduced data: </span><span class="si">{</span><span class="n">X_pca</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> dati, </span><span class="si">{</span><span class="n">X_pca</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1"> feature&#39;</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Reduced data PCA output: </span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">X_pca</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PCA : &quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;- components: </span><span class="se">\n</span><span class="si">{</span><span class="n">diabetes_pca</span><span class="o">.</span><span class="n">components_</span><span class="si">}</span><span class="s1"> </span><span class="se">\n</span><span class="s1">&#39;</span>
-      <span class="sa">f</span><span class="s1">&#39;- explained variance: </span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">diabetes_pca</span><span class="o">.</span><span class="n">explained_variance_</span><span class="si">}</span><span class="s1"> </span><span class="se">\n</span><span class="s1">&#39;</span>
-      <span class="sa">f</span><span class="s1">&#39;- explained variance ratio: </span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">diabetes_pca</span><span class="o">.</span><span class="n">explained_variance_ratio_</span><span class="si">}</span><span class="s1"> </span><span class="se">\n</span><span class="s1">&#39;</span>
-      <span class="sa">f</span><span class="s1">&#39;- singular values: </span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">diabetes_pca</span><span class="o">.</span><span class="n">singular_values_</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
-      <span class="sa">f</span><span class="s1">&#39;- noise variance values:  </span><span class="si">{</span><span class="n">diabetes_pca</span><span class="o">.</span><span class="n">noise_variance_</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">80</span><span class="p">)</span>
-<span class="c1">#prepare the data, </span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The  reduced data ha been divided to train and test in 80% traing, 20% testing&quot;</span><span class="p">)</span>
-<span class="n">X_pca_train</span><span class="p">,</span> <span class="n">X_pca_test</span><span class="p">,</span> <span class="n">y_diabetes_train</span><span class="p">,</span> <span class="n">y_diabetes_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
-    <span class="n">X_pca</span><span class="p">,</span> <span class="n">y_diabetes</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">test_size</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span>
-
-
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Allenaimo un Gradient Boosting Classifier sui dati ridotti:&#39;</span><span class="p">)</span>
-<span class="n">tree</span> <span class="o">=</span> <span class="n">GradientBoostingClassifier</span><span class="p">()</span>
-
-<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">tree</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_pca_train</span><span class="p">,</span> <span class="n">y_diabetes_train</span><span class="p">)</span>
-<span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time taken to train Gradient Boosting Classifier on reduced data: </span><span class="si">{</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="si">}</span><span class="s2">s &quot;</span><span class="p">)</span>
-
-<span class="n">plot_confusion_matrix</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">X_pca_test</span><span class="p">,</span> <span class="n">y_diabetes_test</span><span class="p">,</span> <span class="n">display_labels</span><span class="o">=</span><span class="n">target_names</span><span class="p">)</span>  
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Confusion matrix of classification&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">classification_report</span><span class="p">(</span><span class="n">y_diabetes_test</span><span class="p">,</span> <span class="n">tree</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_pca_test</span><span class="p">),</span> <span class="n">target_names</span><span class="o">=</span> <span class="n">target_names</span><span class="p">))</span>
 </pre></div>
 
      </div>
@@ -14483,40 +14762,41 @@ Poiché <strong><a href="https://scikit-learn.org/stable/modules/generated/sklea
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Original data: 768 dati, 8 feature
-Reduced data: 768 dati, 5 feature
-Reduced data PCA output: 
- [[-75.71465491 -35.95078264  -7.26078895  15.66926931  16.50654126]
- [-82.3582676   28.90821322  -5.49667139   9.00455376   3.481527  ]
- [-74.63064344 -67.90649647  19.46180812  -5.65305642 -10.30011346]
- ...
- [ 32.11319827   3.3766648   -1.58786446  -0.87844546  -2.97928772]
- [-80.21449431 -14.18601977  12.3512639  -14.29425948   8.53295029]
- [-81.30814972  21.62149606  -8.15276833  13.82170554  -4.91320746]]
-PCA : 
-- components: 
-[[-2.02176587e-03  9.78115765e-02  1.60930503e-02  6.07566861e-02
-   9.93110844e-01  1.40108085e-02  5.37167919e-04 -3.56474430e-03]
- [-2.26488861e-02 -9.72210040e-01 -1.41909330e-01  5.78614699e-02
-   9.46266913e-02 -4.69729766e-02 -8.16804621e-04 -1.40168181e-01]
- [-2.24649003e-02  1.43428710e-01 -9.22467192e-01 -3.07013055e-01
-   2.09773019e-02 -1.32444542e-01 -6.39983017e-04 -1.25454310e-01]
- [-4.90459604e-02  1.19830016e-01 -2.62742788e-01  8.84369380e-01
-  -6.55503615e-02  1.92801728e-01  2.69908637e-03 -3.01024330e-01]
- [ 1.51612874e-01 -8.79407680e-02 -2.32165009e-01  2.59973487e-01
-  -1.72312241e-04  2.14744823e-02  1.64080684e-03  9.20504903e-01]] 
-- explained variance: 
- [13456.57298102   932.76013231   390.57783115   198.18269105
-   112.68911496] 
-- explained variance ratio: 
- [0.88854663 0.06159078 0.02579012 0.01308614 0.00744094] 
-- singular values: 
- [3212.6611207   845.82919167  547.33280231  389.87962763  293.9941346 ]
-- noise variance values:  17.89767435801635
---------------------------------------------------------------------------------
-The  reduced data ha been divided to train and test in 80% traing, 20% testing
-Allenaimo un Gradient Boosting Classifier sui dati ridotti:
-Time taken to train Gradient Boosting Classifier on reduced data: 0.13204050064086914s 
+<pre>Classification of DBSCAN on iris
+              precision    recall  f1-score   support
+
+          -1       0.00      0.00      0.00         0
+           0       1.00      0.98      0.99        50
+           1       0.52      0.88      0.66        50
+           2       0.00      0.00      0.00        50
+
+    accuracy                           0.62       150
+   macro avg       0.38      0.46      0.41       150
+weighted avg       0.51      0.62      0.55       150
+
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
+<pre>C:\Users\matte\anaconda3\lib\site-packages\sklearn\metrics\_classification.py:1245: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+C:\Users\matte\anaconda3\lib\site-packages\sklearn\metrics\_classification.py:1245: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+C:\Users\matte\anaconda3\lib\site-packages\sklearn\metrics\_classification.py:1245: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+C:\Users\matte\anaconda3\lib\site-packages\sklearn\metrics\_classification.py:1245: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+C:\Users\matte\anaconda3\lib\site-packages\sklearn\metrics\_classification.py:1245: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+C:\Users\matte\anaconda3\lib\site-packages\sklearn\metrics\_classification.py:1245: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
 </pre>
 </div>
 </div>
@@ -14529,32 +14809,16 @@ Time taken to train Gradient Boosting Classifier on reduced data: 0.132040500640
 
 
 
-<div class="jp-RenderedImage jp-OutputArea-output ">
-<img src="data:image/png;base64,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
-"
->
-</div>
-
-</div>
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 
 
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>              precision    recall  f1-score   support
 
-Not Diabetes       0.87      0.79      0.83       107
-    Diabetes       0.61      0.72      0.66        47
-
-    accuracy                           0.77       154
-   macro avg       0.74      0.76      0.74       154
-weighted avg       0.79      0.77      0.78       154
-
-</pre>
-</div>
+<div id="938ce9db-e835-4894-80d5-ea3b338d5cea" class="jupyter-widgets jp-OutputArea-output ">
+<script type="text/javascript">
+var element = document.getElementById('938ce9db-e835-4894-80d5-ea3b338d5cea');
+</script>
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id": "e48932fe22ee4d2e938e0604ef45a1e0", "version_major": 2, "version_minor": 0}
+</script>
 </div>
 
 </div>
@@ -14562,55 +14826,35 @@ weighted avg       0.79      0.77      0.78       154
 </div>
 
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Non-negative-matrix-factorization-(NMF-o-NNMF)">Non-negative matrix factorization (NMF o NNMF)<a class="anchor-link" href="#Non-negative-matrix-factorization-(NMF-o-NNMF)">&#182;</a></h1><p>La PCA presenta un modo di ridurre la dimensionalità del dataset, ma è presente un problema: la possibilità che la ricostruzione della matrice dia dei valori negativi ed in genere i valori negativi sono difficili da interptretare ed analizzare, per questo l'obiettivo della <strong><a href="https://scikit-learn.org/stable/modules/decomposition.html#non-negative-matrix-factorization-nmf-or-nnmf">NMF</a></strong> è quello di fattorizzare la matrice imponendo che gli autovalori e i vettori delle matrici fattorizzati siano tutti positivi, poiché questo implica avere un maggiorn numero possibile di modi di fattorizzare, in genere la condizione che si pone è che la distanza matriciale tra la decomposizione e l'originale sia quanto <strong>più vicina secondo la distanza di Frobenius definita anche come</strong> <strong><a href="https://it.wikipedia.org/wiki/Norma_matriciale">norma matriciale</a></strong>, <strong>si introducono inoltre termini di regoralizzazione o si usano altre metriche per assicurare un risultato flessibile e quanto meno divergente, per saperne di più guardate</strong> <strong><a href="https://scikit-learn.org/stable/modules/decomposition.html#nmf-with-a-beta-divergence">qui</a></strong>.
-Usiamo ora il modello sul diabetes dataset.</p>
 
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">NMF</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#classification training report</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Classification of DBSCAN on diabetes&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classification_report</span><span class="p">(</span><span class="n">y_diabetes</span><span class="p">,</span> <span class="n">dbscan</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X_diabetes</span><span class="p">)))</span>
 
-<span class="n">nmf</span> <span class="o">=</span> <span class="n">NMF</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span> <span class="s1">&#39;nndsvda&#39;</span> <span class="p">)</span>
-<span class="n">nmf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_diabetes</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">,</span> <span class="n">elev</span><span class="o">=-</span><span class="mi">150</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="mi">110</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xs</span> <span class="o">=</span> <span class="n">diabetes</span><span class="p">[</span><span class="s1">&#39;BMI&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="n">diabetes</span><span class="p">[</span><span class="s1">&#39;Glucose&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+           <span class="n">zs</span> <span class="o">=</span> <span class="n">diabetes</span><span class="p">[</span><span class="s1">&#39;Age&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">y_diabetes</span> <span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Diabetes dataset&quot;</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;BMI&#39;</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Glucose&#39;</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;Age&#39;</span><span class="p">)</span>
 
-<span class="c1">#trasform the data</span>
-<span class="n">X_NMF</span> <span class="o">=</span> <span class="n">nmf</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_diabetes</span><span class="p">)</span>
+<span class="n">ax4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">,</span> <span class="n">elev</span><span class="o">=-</span><span class="mi">150</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="mi">110</span><span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xs</span> <span class="o">=</span> <span class="n">diabetes</span><span class="p">[</span><span class="s1">&#39;BMI&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="n">diabetes</span><span class="p">[</span><span class="s1">&#39;Glucose&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+           <span class="n">zs</span> <span class="o">=</span> <span class="n">diabetes</span><span class="p">[</span><span class="s1">&#39;Age&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">dbscan</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X_diabetes</span><span class="p">)</span> <span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Predicted dataset DBSCAN&quot;</span><span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;BMI&#39;</span><span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Glucose&#39;</span><span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;Age&#39;</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Reduced data: </span><span class="si">{</span><span class="n">X_NMF</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> dati, </span><span class="si">{</span><span class="n">X_NMF</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1"> feature&#39;</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NMF : &quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;- components: </span><span class="se">\n</span><span class="si">{</span><span class="n">nmf</span><span class="o">.</span><span class="n">components_</span><span class="si">}</span><span class="s1"> </span><span class="se">\n</span><span class="s1">&#39;</span>
-      <span class="sa">f</span><span class="s1">&#39;- reguralization: </span><span class="si">{</span><span class="n">nmf</span><span class="o">.</span><span class="n">regularization</span><span class="si">}</span><span class="s1"> </span><span class="se">\n</span><span class="s1">&#39;</span>
-      <span class="sa">f</span><span class="s1">&#39;- reconstruction error:  </span><span class="si">{</span><span class="n">nmf</span><span class="o">.</span><span class="n">reconstruction_err_</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
-      <span class="sa">f</span><span class="s1">&#39;- iterations:  </span><span class="si">{</span><span class="n">nmf</span><span class="o">.</span><span class="n">n_iter_</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">80</span><span class="p">)</span>
-<span class="c1">#prepare the data, </span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The  reduced data ha been divided to train and test in 80% traing, 20% testing&quot;</span><span class="p">)</span>
-<span class="n">X_NMF_train</span><span class="p">,</span> <span class="n">X_NMF_test</span><span class="p">,</span> <span class="n">y_diabetes_train</span><span class="p">,</span> <span class="n">y_diabetes_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
-    <span class="n">X_NMF</span><span class="p">,</span> <span class="n">y_diabetes</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">test_size</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span>
-
-
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Allenaimo un Gradient Boosting Classifier sui dati ridotti:&#39;</span><span class="p">)</span>
-<span class="n">tree</span> <span class="o">=</span> <span class="n">GradientBoostingClassifier</span><span class="p">()</span>
-
-<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">tree</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_NMF_train</span><span class="p">,</span> <span class="n">y_diabetes_train</span><span class="p">)</span>
-<span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time taken to train Gradient Boosting Classifier on reduced data: </span><span class="si">{</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="si">}</span><span class="s2">s &quot;</span><span class="p">)</span>
-
-<span class="n">plot_confusion_matrix</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">X_NMF_test</span><span class="p">,</span> <span class="n">y_diabetes_test</span><span class="p">,</span> <span class="n">display_labels</span><span class="o">=</span><span class="n">target_names</span><span class="p">)</span>  
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Confusion matrix of classification&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">classification_report</span><span class="p">(</span><span class="n">y_diabetes_test</span><span class="p">,</span> <span class="n">tree</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_NMF_test</span><span class="p">),</span> <span class="n">target_names</span><span class="o">=</span> <span class="n">target_names</span><span class="p">))</span>
 </pre></div>
 
      </div>
@@ -14630,26 +14874,40 @@ Usiamo ora il modello sul diabetes dataset.</p>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Reduced data: 768 dati, 5 feature
-NMF : 
-- components: 
-[[0.00000000e+00 2.89783767e+01 1.00748387e+01 6.12720434e+00
-  9.89592151e+01 5.69477201e+00 1.15058687e-01 0.00000000e+00]
- [2.58522324e-01 0.00000000e+00 3.40639250e+01 4.85447841e+01
-  0.00000000e+00 2.00676912e+01 2.41128942e-01 6.59052809e+00]
- [1.46708602e+00 7.74790821e+01 0.00000000e+00 6.08299232e-01
-  0.00000000e+00 9.96926946e+00 1.80613448e-01 1.23522457e+01]
- [1.64804461e+00 1.64152347e+01 9.09151052e+00 0.00000000e+00
-  1.43213003e+02 1.28305101e+00 6.90075777e-02 1.06020940e+01]
- [2.46282693e+00 5.62773176e+01 4.57265607e+01 0.00000000e+00
-  0.00000000e+00 1.44679168e+01 1.89713143e-01 1.99219926e+01]] 
-- reguralization: both 
-- reconstruction error:  359.33201809247294
-- iterations:  35
---------------------------------------------------------------------------------
-The  reduced data ha been divided to train and test in 80% traing, 20% testing
-Allenaimo un Gradient Boosting Classifier sui dati ridotti:
-Time taken to train Gradient Boosting Classifier on reduced data: 0.12500262260437012s 
+<pre>Classification of DBSCAN on diabetes
+              precision    recall  f1-score   support
+
+          -1       0.00      0.00      0.00       0.0
+           0       0.00      0.00      0.00     500.0
+           1       0.00      0.00      0.00     268.0
+
+    accuracy                           0.00     768.0
+   macro avg       0.00      0.00      0.00     768.0
+weighted avg       0.00      0.00      0.00     768.0
+
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
+<pre>C:\Users\matte\anaconda3\lib\site-packages\sklearn\metrics\_classification.py:1245: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+C:\Users\matte\anaconda3\lib\site-packages\sklearn\metrics\_classification.py:1245: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+C:\Users\matte\anaconda3\lib\site-packages\sklearn\metrics\_classification.py:1245: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+C:\Users\matte\anaconda3\lib\site-packages\sklearn\metrics\_classification.py:1245: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+C:\Users\matte\anaconda3\lib\site-packages\sklearn\metrics\_classification.py:1245: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+C:\Users\matte\anaconda3\lib\site-packages\sklearn\metrics\_classification.py:1245: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
 </pre>
 </div>
 </div>
@@ -14662,32 +14920,18 @@ Time taken to train Gradient Boosting Classifier on reduced data: 0.125002622604
 
 
 
-<div class="jp-RenderedImage jp-OutputArea-output ">
-<img src="data:image/png;base64,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
-"
->
+
+
+
+<div id="1688efd8-416b-41fb-be16-48163edd298a" class="jupyter-widgets jp-OutputArea-output ">
+<script type="text/javascript">
+var element = document.getElementById('1688efd8-416b-41fb-be16-48163edd298a');
+</script>
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id": "9b645dfd197248c4921486bd7e2a6772", "version_major": 2, "version_minor": 0}
+</script>
 </div>
 
-</div>
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>              precision    recall  f1-score   support
-
-Not Diabetes       0.82      0.88      0.85       107
-    Diabetes       0.68      0.57      0.62        47
-
-    accuracy                           0.79       154
-   macro avg       0.75      0.73      0.74       154
-weighted avg       0.78      0.79      0.78       154
-
-</pre>
-</div>
 </div>
 
 </div>
@@ -14697,153 +14941,11 @@ weighted avg       0.78      0.79      0.78       154
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="Latent-Dirichlet-Annotation(LDA)">Latent Dirichlet Annotation(LDA)<a class="anchor-link" href="#Latent-Dirichlet-Annotation(LDA)">&#182;</a></h2><p>L' <strong><a href="https://scikit-learn.org/stable/modules/decomposition.html#latent-dirichlet-allocation-lda">LDA</a></strong> è un algoritmo di riduzione dimensionale che è <strong><a href="https://ichi.pro/it/modelli-grafici-probabilistici-generativi-vs-discriminativi-40857457895478">probabilistico generativo</a></strong>, la differenza da quelli discriminativi è che in questo caso noi cerchiamo di determinare una distribuzione di probabilità attraverso cui possiamo determinare quale sia la probabilità associata a quell'evento. Tradotto in matematica i modelli discriminativi determinano $P(Y|X)$, mentre quelli generativi $P(Y,X)$, questo permette in futuro anche di generare anche valori con una certa probabilità associata e in genere non sono limitati alla mera classificazione, per dettagli guardate qui un <strong><a href="https://www.youtube.com/watch?v=8L11aMN5KY8">video sulle GAN</a></strong>, che sono modelli generativi.<br>
-<strong><em>Attenti però che questi modelli sono meno precisi poichè assumono che idati siano i.i.d. condizione che nei discriminativi può anche non essere vera!.</em></strong><br>
-Tornando alla LDA quello che succede è che questo algoritmo cervca di capire dai dati quale sia la struttura sottostante leggendone solo una parte, facendo ciò quello che succede è che divide per categorie la struttura e in base a ciò considera solo le categorie più rilevanti al fine di poterne ricreare la struttura completa, <strong>questo algoritmo permette l'apprendimento "online" ovvero ogni singolo nuovo dato può essere usato per allenare il modello e adattarlo in maniera istantanea ai possibili cambiamenti, se invece volete riallenare il modello solo quanto un certo numero di dati è raggiunto potete usare "batch"</strong>.</p>
-
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">LatentDirichletAllocation</span>
-
-<span class="n">lda</span> <span class="o">=</span> <span class="n">LatentDirichletAllocation</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">lda</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_diabetes</span><span class="p">)</span>
-
-<span class="c1">#trasform the data</span>
-<span class="n">X_lda</span> <span class="o">=</span> <span class="n">lda</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_diabetes</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Reduced data: </span><span class="si">{</span><span class="n">X_lda</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> dati, </span><span class="si">{</span><span class="n">X_lda</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1"> feature&#39;</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LDA : &quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;- components: </span><span class="se">\n</span><span class="si">{</span><span class="n">lda</span><span class="o">.</span><span class="n">components_</span><span class="si">}</span><span class="s1"> </span><span class="se">\n</span><span class="s1">&#39;</span>
-      <span class="sa">f</span><span class="s1">&#39;- bound_: </span><span class="si">{</span><span class="n">lda</span><span class="o">.</span><span class="n">bound_</span><span class="si">}</span><span class="s1"> </span><span class="se">\n</span><span class="s1">&#39;</span>
-      <span class="sa">f</span><span class="s1">&#39;- exp dirichlet components:</span><span class="se">\n</span><span class="s1">  </span><span class="si">{</span><span class="n">lda</span><span class="o">.</span><span class="n">exp_dirichlet_component_</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
-      <span class="sa">f</span><span class="s1">&#39;- iterations:  </span><span class="si">{</span><span class="n">lda</span><span class="o">.</span><span class="n">n_iter_</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">80</span><span class="p">)</span>
-<span class="c1">#prepare the data, </span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The  reduced data ha been divided to train and test in 80% traing, 20% testing&quot;</span><span class="p">)</span>
-<span class="n">X_lda_train</span><span class="p">,</span> <span class="n">X_lda_test</span><span class="p">,</span> <span class="n">y_diabetes_train</span><span class="p">,</span> <span class="n">y_diabetes_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
-    <span class="n">X_lda</span><span class="p">,</span> <span class="n">y_diabetes</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">test_size</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span>
-
-
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Allenaimo un Gradient Boosting Classifier sui dati ridotti:&#39;</span><span class="p">)</span>
-<span class="n">tree</span> <span class="o">=</span> <span class="n">GradientBoostingClassifier</span><span class="p">()</span>
-
-<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">tree</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_lda_train</span><span class="p">,</span> <span class="n">y_diabetes_train</span><span class="p">)</span>
-<span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time taken to train Gradient Boosting Classifier on reduced data: </span><span class="si">{</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="si">}</span><span class="s2">s &quot;</span><span class="p">)</span>
-
-<span class="n">plot_confusion_matrix</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">X_lda_test</span><span class="p">,</span> <span class="n">y_diabetes_test</span><span class="p">,</span> <span class="n">display_labels</span><span class="o">=</span><span class="n">target_names</span><span class="p">)</span>  
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Confusion matrix of classification&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">classification_report</span><span class="p">(</span><span class="n">y_diabetes_test</span><span class="p">,</span> <span class="n">tree</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_lda_test</span><span class="p">),</span> <span class="n">target_names</span><span class="o">=</span> <span class="n">target_names</span><span class="p">))</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Reduced data: 768 dati, 5 feature
-LDA : 
-- components: 
-[[3.61650039e+02 6.85609329e+03 1.90364787e+03 1.22726696e+03
-  2.96267344e+04 1.04713823e+03 2.14561020e+01 2.31121408e+03]
- [2.18948455e+03 6.62673522e+04 3.17920493e+04 1.36697517e+02
-  8.42039260e-01 1.43081114e+04 2.09803183e+02 1.79600532e+04]
- [1.98412787e+01 9.96022154e+03 4.11571311e+03 4.42803762e+03
-  1.01348245e+04 2.97889166e+03 4.76442014e+01 1.43148896e+03]
- [3.74608540e+02 4.44520365e+02 9.02600587e+03 8.61934511e+03
-  6.58300495e-01 3.89423518e+03 4.03455546e+01 3.03597895e+03]
- [8.41558911e+00 9.31981258e+03 6.23658383e+03 1.36165279e+03
-  2.15239407e+04 2.34292350e+03 4.41519586e+01 7.91264788e+02]] 
-- bound_: 4.613606937572235 
-- exp dirichlet components:
-  [[8.33012675e-03 1.58128026e-01 4.38971518e-02 2.82960548e-02
-  6.83345376e-01 2.41412867e-02 4.83409852e-04 5.32978902e-02]
- [1.64753908e-02 4.98757416e-01 2.39279073e-01 1.02509282e-03
-  3.14670564e-06 1.07686227e-01 1.57532176e-03 1.35172565e-01]
- [5.84108496e-04 3.00751074e-01 1.24266001e-01 1.33697181e-01
-  3.06023514e-01 8.99377044e-02 1.42362765e-03 4.32111955e-02]
- [1.47083051e-02 1.74569296e-02 3.54843156e-01 3.38855045e-01
-  1.02522015e-05 1.53084525e-01 1.56659289e-03 1.19341669e-01]
- [1.90275617e-04 2.23869933e-01 1.49804147e-01 3.26978184e-02
-  5.17039340e-01 5.62700511e-02 1.04863687e-03 1.89958723e-02]]
-- iterations:  10
---------------------------------------------------------------------------------
-The  reduced data ha been divided to train and test in 80% traing, 20% testing
-Allenaimo un Gradient Boosting Classifier sui dati ridotti:
-Time taken to train Gradient Boosting Classifier on reduced data: 0.1150045394897461s 
-</pre>
-</div>
-</div>
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-
-
-<div class="jp-RenderedImage jp-OutputArea-output ">
-<img src="data:image/png;base64,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
-"
->
-</div>
-
-</div>
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>              precision    recall  f1-score   support
-
-Not Diabetes       0.76      0.87      0.81       107
-    Diabetes       0.55      0.36      0.44        47
-
-    accuracy                           0.71       154
-   macro avg       0.65      0.62      0.62       154
-weighted avg       0.69      0.71      0.69       154
-
-</pre>
-</div>
-</div>
-
-</div>
-
-</div>
-
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>In questo notebook abbiamo quindi visto come possiamo utilizzare alcune tecniche per ridurre la dimensione del nostro dataset con lacondizione di riuscire a usare modelli che riescano a preformare quanto meglio possibile, sono presenti molte altre tecniche, per saprenedi più consultate la <strong><a href="https://scikit-learn.org/stable/modules/decomposition.html#decompositions">guida di scikit sulla dimensionality reduction</a></strong>.</p>
+<p>Come possiamo vedere il DBSCAN in alcuni dataset è in grado di fare un lavoro discreto come nell'iris, ma purtroppo per altri tipi di dataset come diabetes non lo fa poiché la densità dei dataset è troppo significativa per poter definire ulteriori cluster, per provare a ottenere soluzioni migliori potete impostare diversi valori di <code>min_samples</code> e <code>eps</code> oppure cambiare l'ordine dei dati che influisce sulla creazione dei cluster.<br>
+Negli algoritmi agglomerativi è possibile avere un <strong><a href="https://it.wikipedia.org/wiki/Dendrogramma">dendogramma</a></strong> attraverso cui è possibile visualizzare l'albero di separazione, potete guardare <strong><a href="https://scikit-learn.org/stable/auto_examples/cluster/plot_agglomerative_dendrogram.html">questo esempio scikit</a></strong>.<br>
+Per avere una visione più generale del problema potete anche guardare come si comportano i diversi algoritmi scikit <strong><a href="https://scikit-learn.org/stable/modules/clustering.html#overview-of-clustering-methods">qui</a></strong>, inoltre per saperne di più sul clustering in scikit consultate <strong><a href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html#sklearn.cluster.DBSCAN">la sezione scikit</a></strong>.</p>
 <hr>
-<p>COMPLIMENTI AVETE FINITO LA LEZIONE SU PCA LDA E NMF, A PRESTO!</p>
+<p>COMPLIMENTO AVETE FINITO IL NOTEBOOK SUL CLUSTERING A PRESTO!</p>
 
 </div>
 </div>
